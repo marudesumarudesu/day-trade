@@ -324,7 +324,7 @@
         { front: "必須ツール", back: "「ハイパーSBI」または「マーケットスピード」。そして遅延なく動作するハイスペックなパソコン。" },
         { front: "画面構成\n(コックピット)", back: "フル板、歩み値、日経平均（ティック）、銘柄チャート2つ（1分足とティック）を同時監視する。" },
         { front: "買いエントリーの\n見極めサイン", back: "「出来高上昇を伴った連続陽線」が出現したタイミング。基本的に寄り付きは順張りで狙う。" },
-        { front: "最重要ルール\n(利確と損切)", back: "利確は「5ティック」、損切は「2ティック」。感情に左右されず、この数値を機械的に実行する。" },
+        { front: "最重要ルール\n(利確と損切)", back: "感情を排除し、設定した数値を機械的に実行する。\n（※例えば「利確5ティック、損切2ティック」のようにルール化。数値はあくまで一例であり、相場のボラティリティにより調整する）" },
         { front: "アルゴへの対応", back: "人間には不可能な速度の注文。絶対に逆らわず、彼らが作り出す波に乗ることが重要。" }
       ];
 
@@ -350,7 +350,7 @@
                   </div>
                   <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-blue-900 to-blue-700 text-white rounded-2xl flex flex-col items-center justify-center p-6 shadow-xl">
                     <span className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-3">Answer</span>
-                    <p className="text-center text-sm leading-relaxed font-medium">{card.back}</p>
+                    <p className="text-center text-sm leading-relaxed font-medium whitespace-pre-line">{card.back}</p>
                   </div>
                 </div>
               </div>
@@ -516,7 +516,7 @@
     // 5. 期待値シミュレータビュー
     // ==========================================
     function SimulatorView() {
-      useIcons();
+      // 以前のエラー原因であった useIcons(); を削除しました
       const [winRate, setWinRate] = useState(50);
       const [profit, setProfit] = useState(5);
       const [loss, setLoss] = useState(2);
