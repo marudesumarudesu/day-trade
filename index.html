@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>まる流デイトレ 完全攻略ポータル</title>
+  
+  <!-- Tailwind CSS (デザイン用) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM (動作エンジン) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel (ブラウザ上でReactコードを翻訳) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons (アイコン用) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+    body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8fafc; }
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; }
+    .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    .rotate-y-180 { transform: rotateY(180deg); }
+    .group:hover .group-hover\:rotate-y-180 { transform: rotateY(180deg); }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body>
+  <!-- ここにアプリが描画されます -->
+  <div id="root"></div>
+
+  <!-- Reactのコード本体 -->
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+
+    // アイコンを再描画するためのカスタムフック
+    function useIcons() {
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+    }
+
+    // ==========================================
+    // メインアプリケーションコンポーネント
+    // ==========================================
+    function App() {
+      const [activeTab, setActiveTab] = useState('home');
+      useIcons(); // アイコン描画
+
+      const navItems = [
+        { id: 'home', icon: 'book-open', label: 'ホーム (要約・スライド)' },
+        { id: 'media', icon: 'headphones', label: '音声＆動画解説' },
+        { id: 'flashcards', icon: 'layers', label: 'フラッシュカード' },
+        { id: 'quiz', icon: 'check-square', label: '理解度クイズ' },
+        { id: 'simulator', icon: 'bar-chart-3', label: '期待値シミュレータ' },
+      ];
+
+      return (
+        <div className="flex h-screen bg-slate-50 overflow-hidden text-slate-800">
+          
+          {/* サイドバー */}
+          <aside className="w-72 bg-white border-r border-slate-200 shadow-sm flex flex-col h-full z-10 hidden md:flex">
+            <div className="p-6 border-b border-slate-100">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-md">
+                  <i data-lucide="trending-up" className="w-6 h-6"></i>
+                </div>
+                <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500">
+                  YDK Learning
+                </h1>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">まる流デイトレ完全攻略ポータル</p>
+            </div>
+            
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+              <div className="text-xs font-bold text-slate-400 mb-4 px-3 uppercase tracking-wider">コンテンツ</div>
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${
+                    activeTab === item.id 
+                      ? 'bg-blue-50 text-blue-700 shadow-sm' 
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className={`${activeTab === item.id ? 'text-blue-600' : 'text-slate-400'}`}>
+                    <i data-lucide={item.icon} className="w-5 h-5"></i>
+                  </div>
+                  {item.label}
+                  {activeTab === item.id && <i data-lucide="chevron-right" className="w-4 h-4 ml-auto opacity-50"></i>}
+                </button>
+              ))}
+            </nav>
+            
+            <div className="p-4 border-t border-slate-100">
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <p className="text-xs font-bold text-slate-700 mb-1">講師: まる@投資とAIの先生</p>
+                <p className="text-xs text-slate-500 leading-relaxed">AIエンジニア兼FP。総資産200万から1300万へ。日本個別株特化。</p>
+              </div>
+            </div>
+          </aside>
+
+          {/* メインコンテンツ */}
+          <main className="flex-1 h-full overflow-y-auto scroll-smooth relative">
+            <div className="md:hidden bg-white p-4 border-b border-slate-200 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center text-white">
+                  <i data-lucide="trending-up" className="w-4 h-4"></i>
+                </div>
+                <h1 className="font-bold text-blue-900">YDK Learning</h1>
+              </div>
+              <select 
+                className="bg-slate-100 border-none rounded-lg text-sm font-medium text-slate-700 py-2 px-3 focus:ring-2 focus:ring-blue-500"
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value)}
+              >
+                {navItems.map(item => (
+                  <option key={item.id} value={item.id}>{item.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="max-w-5xl mx-auto p-6 md:p-10 pb-20">
+              {activeTab === 'home' && <HomeView />}
+              {activeTab === 'media' && <MediaView />}
+              {activeTab === 'flashcards' && <FlashcardsView />}
+              {activeTab === 'quiz' && <QuizView />}
+              {activeTab === 'simulator' && <SimulatorView />}
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 1. ホームビュー
+    // ==========================================
+    function HomeView() {
+      useIcons();
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-600 rounded-2xl p-8 md:p-12 text-white shadow-xl mb-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+              <i data-lucide="trending-up" style={{width: '300px', height: '300px'}}></i>
+            </div>
+            <div className="relative z-10">
+              <div className="inline-block px-3 py-1 bg-blue-400/30 backdrop-blur-sm rounded-full text-xs font-bold tracking-widest text-blue-100 mb-4 uppercase">
+                Official Course Material
+              </div>
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+                目指せ時給60万円！<br />禁断のまる流デイトレ術
+              </h1>
+              <p className="text-blue-100 text-lg md:text-xl max-w-2xl font-light">
+                AIエンジニアが導き出した「感情を排除した機械的トレード」の真髄。朝10分で日給数万円を稼ぐための修羅場の歩き方。
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <section>
+                <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <i data-lucide="shield-check" className="text-blue-600 w-6 h-6"></i> 講義のコア・サマリー
+                </h2>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                  <div className="flex gap-4 items-start mb-6 pb-6 border-b border-slate-100">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600">
+                      <i data-lucide="alert-circle" className="w-6 h-6"></i>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-800 mb-2">9:00〜9:30のゴールデンタイムを狙え</h3>
+                      <p className="text-slate-600 leading-relaxed">
+                        ボラティリティが大きく、短期でも利益を出しやすい寄り付き直後の30分に全集中します。ダラダラと取引を続けるのは最悪の愚策です。
+                      </p>
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-bold text-slate-800 mb-4">絶対法則・3つの鉄則</h3>
+                  <div className="space-y-4">
+                    {[
+                      { title: "機械的な利確・損切", desc: "利確5ティック、損切2ティック（ボラティリティにより調整）。感情を完全に排す。" },
+                      { title: "最強のコックピット構築", desc: "ハイパーSBI等で「フル板」「歩み値」「日経平均チャート」「銘柄チャート(1分足・ティック)」を監視。" },
+                      { title: "アルゴリズムには逆らわない", desc: "人間には不可能な速度の注文を見つけたら、絶対に逆らわずその波に乗る。" }
+                    ].map((rule, idx) => (
+                      <div key={idx} className="flex gap-3">
+                        <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800">{rule.title}</p>
+                          <p className="text-slate-600 text-sm">{rule.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* スライドPDF埋め込み */}
+              <section>
+                <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <i data-lucide="file-text" className="text-blue-600 w-6 h-6"></i> 講義スライド資料
+                </h2>
+                <div className="bg-slate-800 rounded-xl p-4 text-white shadow-lg overflow-hidden border border-slate-700">
+                  <div className="flex justify-between items-center mb-4 px-2">
+                    <div className="flex items-center gap-2">
+                      <i data-lucide="file-text" className="text-blue-400 w-5 h-5"></i>
+                      <span className="font-bold">【禁断のデイトレ術】スライド.pdf</span>
+                    </div>
+                    <a href="./【禁断のデイトレ術】スライド.pdf" download className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-2 px-4 rounded flex items-center gap-2 transition-colors">
+                      <i data-lucide="download" className="w-4 h-4"></i> ダウンロード
+                    </a>
+                  </div>
+                  <div className="w-full aspect-[4/3] bg-slate-200 rounded-lg overflow-hidden flex items-center justify-center relative">
+                    <iframe 
+                      src="./【禁断のデイトレ術】スライド.pdf" 
+                      className="w-full h-full border-none"
+                      title="講義スライド"
+                    >
+                      <p className="text-slate-500">※実際の環境ではここにPDFが表示されます。</p>
+                    </iframe>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 className="font-bold text-slate-800 mb-3">戦場へ赴く準備</h3>
+                <ul className="space-y-3 text-sm text-slate-600">
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div> 
+                    <div><strong>資金:</strong> 最低33万円<br/><span className="text-xs text-slate-400">信用取引で約100万円の余力確保</span></div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div> 
+                    <div><strong>銘柄選定:</strong> 出来高重視<br/><span className="text-xs text-slate-400">需給が明確で流動性が高い銘柄</span></div>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div> 
+                    <div><strong>エントリー:</strong> 順張り基本<br/><span className="text-xs text-slate-400">出来高上昇を伴った連続陽線/陰線</span></div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 2. メディアビュー
+    // ==========================================
+    function MediaView() {
+      useIcons();
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">マルチメディア学習</h2>
+            <p className="text-slate-500">まる流スキャルピングの極意を、動画と音声でインプットしましょう。</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200 flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                  <i data-lucide="monitor-play" className="w-8 h-8"></i>
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-red-600 uppercase tracking-wider mb-1">Video Tutorial</div>
+                  <h3 className="text-xl font-bold text-slate-800 break-all">【禁断のデイトレ術】動画.mp4</h3>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm mb-6 flex-1">
+                フル板と歩み値を使った「鞘取り戦略」と「アルゴの見極め方」を、実際の取引ツール画面を用いて解説した貴重な動画教材です。
+              </p>
+              <div className="bg-slate-900 rounded-xl overflow-hidden shadow-inner w-full aspect-video">
+                <video controls className="w-full h-full object-cover" src="./【禁断のデイトレ術】動画.mp4">
+                  お使いのブラウザは動画再生をサポートしていません。
+                </video>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200 flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                  <i data-lucide="file-audio" className="w-8 h-8"></i>
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1">Podcast</div>
+                  <h3 className="text-xl font-bold text-slate-800 break-all">【禁断のデイトレ術】ポッドキャスト.m4a</h3>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm mb-6 flex-1">
+                NotebookLMのAIホスト2人が、まる流デイトレの「なぜ5ティックで利確するのか？」について熱く議論。通勤中や作業中のインプットに最適です。
+              </p>
+              <div className="bg-slate-50 rounded-xl p-6 border border-slate-200 flex flex-col items-center justify-center h-auto aspect-video">
+                <i data-lucide="headphones" className="text-slate-300 mb-6 w-12 h-12"></i>
+                <audio controls className="w-full" src="./【禁断のデイトレ術】ポッドキャスト.m4a">
+                  お使いのブラウザは音声再生をサポートしていません。
+                </audio>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 3. フラッシュカードビュー
+    // ==========================================
+    function FlashcardsView() {
+      useIcons();
+      const cards = [
+        { front: "取引推奨時間\n(ゴールデンタイム)", back: "9:00〜9:30。ボラティリティが大きく、短期でも利益を出しやすいため、この時間に全集中する。" },
+        { front: "必須ツール", back: "「ハイパーSBI」または「マーケットスピード」。そして遅延なく動作するハイスペックなパソコン。" },
+        { front: "画面構成\n(コックピット)", back: "フル板、歩み値、日経平均（ティック）、銘柄チャート2つ（1分足とティック）を同時監視する。" },
+        { front: "買いエントリーの\n見極めサイン", back: "「出来高上昇を伴った連続陽線」が出現したタイミング。基本的に寄り付きは順張りで狙う。" },
+        { front: "最重要ルール\n(利確と損切)", back: "利確は「5ティック」、損切は「2ティック」。感情に左右されず、この数値を機械的に実行する。" },
+        { front: "アルゴへの対応", back: "人間には不可能な速度の注文。絶対に逆らわず、彼らが作り出す波に乗ることが重要。" }
+      ];
+
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-slate-800 mb-2">用語フラッシュカード</h2>
+              <p className="text-slate-500">『目指せ時給60万円』の重要ルールを記憶に定着。カードをホバー（タップ）して確認。</p>
+            </div>
+            <div className="bg-blue-50 text-blue-700 text-sm font-bold px-4 py-2 rounded-lg border border-blue-100 inline-flex items-center gap-2">
+              <i data-lucide="layers" className="w-4 h-4"></i> 全{cards.length}枚
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {cards.map((card, idx) => (
+              <div key={idx} className="group perspective-1000 w-full h-56 cursor-pointer">
+                <div className="relative w-full h-full transition-transform duration-700 transform-style-3d group-hover:rotate-y-180">
+                  <div className="absolute inset-0 backface-hidden bg-white border-2 border-slate-200 rounded-2xl flex flex-col items-center justify-center p-6 shadow-sm group-hover:shadow-md transition-shadow">
+                    <span className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Concept</span>
+                    <h3 className="text-xl font-bold text-blue-900 text-center whitespace-pre-line">{card.front}</h3>
+                  </div>
+                  <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-blue-900 to-blue-700 text-white rounded-2xl flex flex-col items-center justify-center p-6 shadow-xl">
+                    <span className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-3">Answer</span>
+                    <p className="text-center text-sm leading-relaxed font-medium">{card.back}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 4. クイズビュー
+    // ==========================================
+    function QuizView() {
+      useIcons();
+      const questions = [
+        {
+          q: "まる流デイトレ術（PC版）で最も推奨されるトレード時間帯は？",
+          options: ["9:00 〜 9:30", "10:00 〜 11:00", "12:30 〜 13:00", "14:30 〜 15:00"],
+          answer: 0,
+          expl: "ボラティリティが大きく、短期でも利益を出しやすい寄り付き直後の30分がゴールデンタイムです。"
+        },
+        {
+          q: "買いエントリーのチャンスとなる見極めサインはどれ？",
+          options: ["日経平均が完全に横ばいになった時", "出来高上昇を伴った連続陽線が出現した時", "ボリンジャーバンドが収縮した時", "出来高が極端に減少し始めた時"],
+          answer: 1,
+          expl: "寄り付きは基本順張りです。板で強さを確認し、出来高上昇を伴った連続陽線で買いに入ります。"
+        },
+        {
+          q: "トレード時の「最重要ルール」として設定されている利確・損切の基本ラインは？",
+          options: ["利確10ティック / 損切5ティック", "利確3ティック / 損切3ティック", "利確5ティック / 損切2ティック", "利確2ティック / 損切5ティック"],
+          answer: 2,
+          expl: "利確5ティック、損切2ティックを機械的に守ることが成功の鍵です（ボラティリティに応じて調整可）。"
+        },
+        {
+          q: "最強の画面構成（コックピット）に含めるべきチャートとして推奨【されていない】ものはどれ？",
+          options: ["日経平均チャート（ティック）", "対象銘柄の1分足チャート", "対象銘柄のティックチャート", "対象銘柄の日足チャート"],
+          answer: 3,
+          expl: "スキャルピングでは極めて短い時間軸を見るため、日足ではなく「1分足」と「ティックチャート」の2つを使用します。"
+        }
+      ];
+
+      const [answers, setAnswers] = useState({});
+      const [submitted, setSubmitted] = useState(false);
+      const [score, setScore] = useState(0);
+
+      const handleSelect = (qIdx, optIdx) => {
+        if (submitted) return;
+        setAnswers({ ...answers, [qIdx]: optIdx });
+      };
+
+      const handleSubmit = () => {
+        let currentScore = 0;
+        questions.forEach((q, idx) => {
+          if (answers[idx] === q.answer) currentScore++;
+        });
+        setScore(currentScore);
+        setSubmitted(true);
+      };
+
+      const resetQuiz = () => {
+        setAnswers({});
+        setSubmitted(false);
+        setScore(0);
+      };
+
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">実戦前・理解度クイズ</h2>
+            <p className="text-slate-500">市場という修羅場へ赴く準備が整っているか、最終確認しましょう。</p>
+          </div>
+
+          <div className="space-y-8">
+            {questions.map((q, qIdx) => (
+              <div key={qIdx} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex gap-3">
+                  <span className="text-blue-600">Q{qIdx + 1}.</span> {q.q}
+                </h3>
+                <div className="space-y-3">
+                  {q.options.map((opt, optIdx) => {
+                    const isSelected = answers[qIdx] === optIdx;
+                    const isCorrect = q.answer === optIdx;
+                    
+                    let btnClass = "w-full text-left px-5 py-4 rounded-xl border-2 transition-all duration-200 font-medium text-sm md:text-base ";
+                    
+                    if (!submitted) {
+                      btnClass += isSelected 
+                        ? "border-blue-500 bg-blue-50 text-blue-800" 
+                        : "border-slate-100 bg-slate-50 text-slate-600 hover:border-blue-200 hover:bg-white";
+                    } else {
+                      if (isCorrect) {
+                        btnClass += "border-green-500 bg-green-50 text-green-800";
+                      } else if (isSelected && !isCorrect) {
+                        btnClass += "border-red-500 bg-red-50 text-red-800";
+                      } else {
+                        btnClass += "border-slate-100 bg-slate-50 text-slate-400 opacity-50";
+                      }
+                    }
+
+                    return (
+                      <button 
+                        key={optIdx} 
+                        onClick={() => handleSelect(qIdx, optIdx)}
+                        disabled={submitted}
+                        className={btnClass}
+                      >
+                        {opt}
+                        {submitted && isCorrect && <span className="float-right text-green-600 font-bold">✓ 正解</span>}
+                        {submitted && isSelected && !isCorrect && <span className="float-right text-red-600 font-bold">✗ 不正解</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                {submitted && (
+                  <div className={`mt-4 p-4 rounded-lg text-sm ${answers[qIdx] === q.answer ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                    <strong>解説: </strong>{q.expl}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 p-6 bg-slate-100 rounded-2xl text-center">
+            {!submitted ? (
+              <button 
+                onClick={handleSubmit}
+                disabled={Object.keys(answers).length < questions.length}
+                className={`px-8 py-3 rounded-xl font-bold text-white shadow-md transition-all ${
+                  Object.keys(answers).length < questions.length 
+                    ? 'bg-slate-400 cursor-not-allowed' 
+                    : 'bg-blue-600 hover:bg-blue-500 hover:scale-105 active:scale-95'
+                }`}
+              >
+                回答を採点する
+              </button>
+            ) : (
+              <div className="animate-in zoom-in duration-500">
+                <h3 className="text-2xl font-bold mb-2">
+                  結果: {score} / {questions.length} 問正解
+                </h3>
+                {score === questions.length ? (
+                  <p className="text-green-600 font-bold mb-6 flex items-center justify-center gap-2 text-lg">
+                    🎉 完璧です！修羅場へ赴く準備が整いました。
+                  </p>
+                ) : (
+                  <p className="text-amber-600 font-bold mb-6">
+                    もう一度資料やフラッシュカードで復習しましょう。
+                  </p>
+                )}
+                <button 
+                  onClick={resetQuiz}
+                  className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold transition-colors"
+                >
+                  もう一度挑戦する
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 5. 期待値シミュレータビュー
+    // ==========================================
+    function SimulatorView() {
+      useIcons();
+      const [winRate, setWinRate] = useState(50);
+      const [profit, setProfit] = useState(5);
+      const [loss, setLoss] = useState(2);
+      const [trials, setTrials] = useState(100);
+
+      const expectedValue = (profit * (winRate / 100)) - (loss * (1 - (winRate / 100)));
+      const isProfitable = expectedValue > 0;
+
+      const chartData = useMemo(() => {
+        let seed = 1;
+        const random = () => {
+          const x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+        };
+
+        const numLines = 5;
+        const paths = [];
+        let minY = 0;
+        let maxY = 0;
+
+        for (let l = 0; l < numLines; l++) {
+          let current = 0;
+          const points = [{ x: 0, y: 0 }];
+          for (let i = 1; i <= trials; i++) {
+            const isWin = random() < (winRate / 100);
+            current += isWin ? Number(profit) : -Number(loss);
+            points.push({ x: i, y: current });
+            
+            if (current < minY) minY = current;
+            if (current > maxY) maxY = current;
+          }
+          paths.push(points);
+        }
+        
+        const range = Math.max(maxY - minY, 10);
+        minY -= range * 0.1;
+        maxY += range * 0.1;
+
+        return { paths, minY, maxY };
+      }, [winRate, profit, loss, trials]);
+
+      return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-slate-800 mb-2">期待値シミュレータ</h2>
+            <p className="text-slate-500">「ルールを守れば勝てる」を視覚化します。感情を排除した機械的トレードの強さを確認してください。</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+              <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <i data-lucide="trending-up" className="text-blue-600 w-5 h-5"></i> 設定パネル
+              </h3>
+              
+              <div className="space-y-6">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <label className="text-sm font-bold text-slate-700">勝率 (%)</label>
+                    <span className="text-sm font-bold text-blue-600">{winRate}%</span>
+                  </div>
+                  <input 
+                    type="range" min="10" max="90" step="5" value={winRate} 
+                    onChange={(e) => setWinRate(e.target.value)}
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-bold text-slate-700 block mb-1">利確幅 (ティック)</label>
+                    <input 
+                      type="number" min="1" value={profit} 
+                      onChange={(e) => setProfit(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold text-slate-700 block mb-1">損切幅 (ティック)</label>
+                    <input 
+                      type="number" min="1" value={loss} 
+                      onChange={(e) => setLoss(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <label className="text-sm font-bold text-slate-700">試行回数 (回)</label>
+                    <span className="text-sm font-bold text-blue-600">{trials}回</span>
+                  </div>
+                  <input 
+                    type="range" min="10" max="500" step="10" value={trials} 
+                    onChange={(e) => setTrials(e.target.value)}
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className={`mt-8 p-4 rounded-xl border-2 ${isProfitable ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">1回あたりの期待値</p>
+                <div className={`text-3xl font-black ${isProfitable ? 'text-green-600' : 'text-red-600'}`}>
+                  {expectedValue > 0 ? '+' : ''}{expectedValue.toFixed(2)} <span className="text-base font-bold">ティック</span>
+                </div>
+                <p className={`text-sm mt-2 font-medium ${isProfitable ? 'text-green-700' : 'text-red-700'}`}>
+                  {isProfitable ? 'このルールを守り続ければ、長期的には資産が増加します。' : 'このルールでは長期的には破産します。設定を見直してください。'}
+                </p>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col">
+              <h3 className="font-bold text-slate-800 mb-6">5人のトレーダーの資産推移シミュレーション</h3>
+              <div className="flex-1 relative bg-slate-50 rounded-xl border border-slate-100 overflow-hidden" style={{ minHeight: '300px' }}>
+                <svg viewBox={`0 ${chartData.minY} ${trials} ${chartData.maxY - chartData.minY}`} className="w-full h-full" preserveAspectRatio="none">
+                  <line x1="0" y1="0" x2={trials} y2="0" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+                  {chartData.paths.map((path, idx) => {
+                    const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
+                    const d = path.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${-p.y}`).join(' '); 
+                    return (
+                      <path 
+                        key={idx} 
+                        d={d} 
+                        fill="none" 
+                        stroke={colors[idx]} 
+                        strokeWidth="2" 
+                        vectorEffect="non-scaling-stroke"
+                        className="opacity-80 transition-all duration-300"
+                      />
+                    );
+                  })}
+                </svg>
+              </div>
+              <p className="text-xs text-slate-400 mt-4 text-center">
+                ※乱数を使用したシミュレーションです。一時的なマイナス（ドローダウン）が発生しても、期待値がプラスなら最終的に右肩上がりになることが分かります。
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // Reactのレンダリング
+    // ==========================================
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
