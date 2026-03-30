@@ -109,7 +109,6 @@
                 </button>
               ))}
             </nav>
-            {/* 左下のプロフィール部分は削除されました */}
           </aside>
 
           {/* メインコンテンツ */}
@@ -517,6 +516,7 @@
     // 5. 期待値シミュレータビュー
     // ==========================================
     function SimulatorView() {
+      useIcons();
       const [winRate, setWinRate] = useState(50);
       const [profit, setProfit] = useState(5);
       const [loss, setLoss] = useState(2);
@@ -551,31 +551,56 @@
           paths.push(points);
         }
         
+        // グラフ内に余裕を持たせるためのパディング
         const range = Math.max(maxY - minY, 10);
-        minY -= range * 0.1;
-        maxY += range * 0.1;
+        minY -= range * 0.15;
+        maxY += range * 0.15;
+
+        // ゼロが必ず含まれるようにする
+        if (minY > 0) minY = -range * 0.1;
+        if (maxY < 0) maxY = range * 0.1;
 
         return { paths, minY, maxY };
       }, [winRate, profit, loss, trials]);
 
+      const { paths, minY, maxY } = chartData;
+
+      // SVGの座標スケール計算
+      const svgWidth = 800;
+      const svgHeight = 350;
+      const padding = { top: 20, right: 20, bottom: 30, left: 60 };
+      const innerWidth = svgWidth - padding.left - padding.right;
+      const innerHeight = svgHeight - padding.top - padding.bottom;
+
+      // 実際のデータをSVGの座標に変換する関数
+      const scaleX = (x) => padding.left + (x / trials) * innerWidth;
+      const scaleY = (y) => padding.top + innerHeight - ((y - minY) / (maxY - minY)) * innerHeight;
+
+      const zeroY = scaleY(0);
+      
+      // Y軸・X軸の目盛りを計算
+      const yTicks = [maxY, maxY * 0.5, 0, minY * 0.5, minY].filter((v, i, a) => a.indexOf(v) === i);
+      const xTicks = [0, Math.floor(trials / 2), trials];
+
       return (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">期待値シミュレータ</h2>
-            <p className="text-slate-500">「ルールを守れば勝てる」を視覚化します。感情を排除した機械的トレードの強さを確認してください。</p>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col h-full">
+          <div className="mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mb-1">期待値シミュレータ</h2>
+            <p className="text-slate-500 text-sm">「ルールを守れば勝てる」を視覚化します。感情を排除した機械的トレードの強さを確認してください。</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-              <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+            {/* 設定パネル */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between">
+              <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
                 <Icon name="trending-up" className="text-blue-600 w-5 h-5" /> 設定パネル
               </h3>
               
-              <div className="space-y-6">
+              <div className="space-y-4 flex-1">
                 <div>
                   <div className="flex justify-between mb-1">
-                    <label className="text-sm font-bold text-slate-700">勝率 (%)</label>
-                    <span className="text-sm font-bold text-blue-600">{winRate}%</span>
+                    <label className="text-xs font-bold text-slate-700">勝率 (%)</label>
+                    <span className="text-xs font-bold text-blue-600">{winRate}%</span>
                   </div>
                   <input 
                     type="range" min="10" max="90" step="5" value={winRate} 
@@ -584,29 +609,29 @@
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm font-bold text-slate-700 block mb-1">利確幅 (ティック)</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">利確幅 (ティック)</label>
                     <input 
                       type="number" min="1" value={profit} 
                       onChange={(e) => setProfit(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                      className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-bold text-slate-700 block mb-1">損切幅 (ティック)</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">損切幅 (ティック)</label>
                     <input 
                       type="number" min="1" value={loss} 
                       onChange={(e) => setLoss(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
+                      className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-sm"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex justify-between mb-1">
-                    <label className="text-sm font-bold text-slate-700">試行回数 (回)</label>
-                    <span className="text-sm font-bold text-blue-600">{trials}回</span>
+                    <label className="text-xs font-bold text-slate-700">試行回数 (回)</label>
+                    <span className="text-xs font-bold text-blue-600">{trials}回</span>
                   </div>
                   <input 
                     type="range" min="10" max="500" step="10" value={trials} 
@@ -616,42 +641,73 @@
                 </div>
               </div>
 
-              <div className={`mt-8 p-4 rounded-xl border-2 ${isProfitable ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">1回あたりの期待値</p>
-                <div className={`text-3xl font-black ${isProfitable ? 'text-green-600' : 'text-red-600'}`}>
-                  {expectedValue > 0 ? '+' : ''}{expectedValue.toFixed(2)} <span className="text-base font-bold">ティック</span>
+              <div className={`mt-4 p-3 rounded-xl border-2 ${isProfitable ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">1回あたりの期待値</p>
+                <div className={`text-2xl font-black ${isProfitable ? 'text-green-600' : 'text-red-600'}`}>
+                  {expectedValue > 0 ? '+' : ''}{expectedValue.toFixed(2)} <span className="text-sm font-bold">ティック</span>
                 </div>
-                <p className={`text-sm mt-2 font-medium ${isProfitable ? 'text-green-700' : 'text-red-700'}`}>
-                  {isProfitable ? 'このルールを守り続ければ、長期的には資産が増加します。' : 'このルールでは長期的には破産します。設定を見直してください。'}
+                <p className={`text-xs mt-1 font-medium ${isProfitable ? 'text-green-700' : 'text-red-700'}`}>
+                  {isProfitable ? '長期的には資産が増加します。' : 'この設定では長期的には破産します。'}
                 </p>
               </div>
             </div>
 
-            <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col">
-              <h3 className="font-bold text-slate-800 mb-6">5人のトレーダーの資産推移シミュレーション</h3>
-              <div className="flex-1 relative bg-slate-50 rounded-xl border border-slate-100 overflow-hidden" style={{ minHeight: '300px' }}>
-                <svg viewBox={`0 ${-chartData.maxY} ${trials} ${chartData.maxY - chartData.minY}`} className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                  <line x1="0" y1="0" x2={trials} y2="0" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
-                  {chartData.paths.map((path, idx) => {
+            {/* グラフ描画エリア */}
+            <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col h-full min-h-[300px]">
+              <h3 className="font-bold text-slate-800 mb-2 text-sm">5人のトレーダーの資産推移シミュレーション</h3>
+              <div className="flex-1 relative bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
+                <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-full absolute inset-0 preserve-3d">
+                  
+                  {/* Y軸のグリッドとラベル */}
+                  {yTicks.map((tick, i) => {
+                    const y = scaleY(tick);
+                    const isZero = Math.abs(tick) < 0.1; // 浮動小数点誤差対策
+                    return (
+                      <g key={`y-${i}`}>
+                        <line 
+                          x1={padding.left} y1={y} 
+                          x2={svgWidth - padding.right} y2={y} 
+                          stroke={isZero ? "#94a3b8" : "#e2e8f0"} 
+                          strokeWidth={isZero ? "2" : "1"} 
+                          strokeDasharray={isZero ? "" : "4 4"} 
+                        />
+                        <text x={padding.left - 10} y={y + 4} textAnchor="end" fontSize="12" fill={isZero ? "#475569" : "#64748b"} fontWeight={isZero ? "bold" : "normal"}>
+                          {tick > 0 ? '+' : ''}{Math.round(tick)}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* X軸のラベル */}
+                  {xTicks.map((tick, i) => {
+                    const x = scaleX(tick);
+                    return (
+                      <g key={`x-${i}`}>
+                        <text x={x} y={svgHeight - 10} textAnchor="middle" fontSize="12" fill="#64748b">
+                          {tick}回
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* 折れ線グラフ */}
+                  {paths.map((path, idx) => {
                     const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'];
-                    const d = path.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${-p.y}`).join(' '); 
+                    const d = path.map((p, i) => `${i === 0 ? 'M' : 'L'} ${scaleX(p.x)} ${scaleY(p.y)}`).join(' '); 
                     return (
                       <path 
                         key={idx} 
                         d={d} 
                         fill="none" 
                         stroke={colors[idx]} 
-                        strokeWidth="2" 
-                        vectorEffect="non-scaling-stroke"
+                        strokeWidth="2"
+                        strokeLinejoin="round"
                         className="opacity-80 transition-all duration-300"
                       />
                     );
                   })}
                 </svg>
               </div>
-              <p className="text-xs text-slate-400 mt-4 text-center">
-                ※乱数を使用したシミュレーションです。一時的なマイナス（ドローダウン）が発生しても、期待値がプラスなら最終的に右肩上がりになることが分かります。
-              </p>
             </div>
           </div>
         </div>
